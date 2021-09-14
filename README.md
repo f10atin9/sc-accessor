@@ -1,2 +1,2 @@
-# storageclass-accesser
+# storageclass-accessor
 Help storageClass to manage cluster resource.
