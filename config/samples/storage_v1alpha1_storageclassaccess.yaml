@@ -1,0 +1,7 @@
+apiVersion: storage.kubesphere.io/v1alpha1
+kind: StorageClassAccess
+metadata:
+  name: storageclassaccess-sample
+spec:
+  # Add fields here
+  foo: bar

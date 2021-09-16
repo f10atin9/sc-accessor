@@ -1,0 +1,15 @@
+domain: kubesphere.io
+layout:
+- go.kubebuilder.io/v3
+projectName: webhook
+repo: webhook
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: kubesphere.io
+  group: storage
+  kind: StorageClassAccess
+  path: webhook/api/v1alpha1
+  version: v1alpha1
+version: "3"
