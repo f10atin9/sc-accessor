@@ -163,7 +163,7 @@ func startServer(ctx context.Context, tlsConfig *tls.Config, cw *CertWatcher) er
 
 	fmt.Println("Starting webhook server")
 	mux := http.NewServeMux()
-	mux.HandleFunc("/persistentvolumeclaim", serverPVCRequest)
+	mux.HandleFunc("/persistentvolumeclaims", serverPVCRequest)
 	mux.HandleFunc("/readyz", func(w http.ResponseWriter, req *http.Request) { w.Write([]byte("ok")) })
 	srv := &http.Server{
 		Handler:   mux,
