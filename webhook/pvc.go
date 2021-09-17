@@ -7,10 +7,6 @@ import (
 	"k8s.io/klog/v2"
 )
 
-var (
-	PVCV1GVR = metav1.GroupVersionResource{Group: "storage.k8s.io", Version: "v1", Resource: "persistentvolumeclaims"}
-)
-
 func admitPVC(ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
 	klog.V(2).Info("admitting pvc")
 
@@ -21,34 +17,22 @@ func admitPVC(ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
 	if !(ar.Request.Operation == admissionv1.Update || ar.Request.Operation == admissionv1.Create) {
 		return reviewResponse
 	}
-	isUpdate := ar.Request.Operation == admissionv1.Update
+	//isUpdate := ar.Request.Operation == admissionv1.Update
 
 	raw := ar.Request.Object.Raw
-	oldRaw := ar.Request.OldObject.Raw
+	//oldRaw := ar.Request.OldObject.Raw
 
 	deserializer := codecs.UniversalDeserializer()
-	//switch ar.Request.Resource {
-	//case PVCV1GVR:
 	pvc := &corev1.PersistentVolumeClaim{}
 	if _, _, err := deserializer.Decode(raw, nil, pvc); err != nil {
 		klog.Error(err)
 		return toV1AdmissionResponse(err)
 	}
-	oldpvc := &corev1.PersistentVolumeClaim{}
-	if _, _, err := deserializer.Decode(oldRaw, nil, pvc); err != nil {
-		klog.Error(err)
-		return toV1AdmissionResponse(err)
-	}
-	return decidePVCV1(pvc, oldpvc, isUpdate)
-	//storageClass := pvc.Spec.StorageClassName
-	//namespace := pvc.Namespace
-	//if err := ValidateV1PVC(*storageClass, namespace); err != nil {
-	//	toV1AdmissionResponse(err)
-	//}
-	//}
+	return decidePVCV1(pvc)
+
 }
 
-func decidePVCV1(pvc, oldpvc *corev1.PersistentVolumeClaim, isUpdate bool) *admissionv1.AdmissionResponse {
+func decidePVCV1(pvc *corev1.PersistentVolumeClaim) *admissionv1.AdmissionResponse {
 	reviewResponse := &admissionv1.AdmissionResponse{
 		Allowed: true,
 		Result:  &metav1.Status{},

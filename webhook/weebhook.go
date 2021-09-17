@@ -38,30 +38,17 @@ func init() {
 	CmdWebhook.MarkFlagRequired("tls-private-key-file")
 }
 
-// admitv1beta1Func handles a v1beta1 admission
-type admitv1beta1Func func(v1beta1.AdmissionReview) *v1beta1.AdmissionResponse
-
 // admitv1beta1Func handles a v1 admission
 type admitv1Func func(v1.AdmissionReview) *v1.AdmissionResponse
 
 // admitHandler is a handler, for both validators and mutators, that supports multiple admission review versions
 type admitHandler struct {
-	v1beta1 admitv1beta1Func
-	v1      admitv1Func
+	v1 admitv1Func
 }
 
 func newDelegateToV1AdmitHandler(f admitv1Func) admitHandler {
 	return admitHandler{
-		v1beta1: delegateV1beta1AdmitToV1(f),
-		v1:      f,
-	}
-}
-
-func delegateV1beta1AdmitToV1(f admitv1Func) admitv1beta1Func {
-	return func(review v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
-		in := v1.AdmissionReview{Request: convertAdmissionRequestToV1(review.Request)}
-		out := f(in)
-		return convertAdmissionResponseToV1beta1(out)
+		v1: f,
 	}
 }
 
@@ -113,7 +100,6 @@ func server(w http.ResponseWriter, r *http.Request, admit admitHandler) {
 		}
 		responseAdmissionReview := &v1beta1.AdmissionReview{}
 		responseAdmissionReview.SetGroupVersionKind(*gvk)
-		responseAdmissionReview.Response = admit.v1beta1(*requestedAdmissionReview)
 		responseAdmissionReview.Response.UID = requestedAdmissionReview.Request.UID
 		responseObj = responseAdmissionReview
 	case v1.SchemeGroupVersion.WithKind("AdmissionReview"):
@@ -164,7 +150,6 @@ func startServer(ctx context.Context, tlsConfig *tls.Config, cw *CertWatcher) er
 	fmt.Println("Starting webhook server")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/persistentvolumeclaims", serverPVCRequest)
-	mux.HandleFunc("/readyz", func(w http.ResponseWriter, req *http.Request) { w.Write([]byte("ok")) })
 	srv := &http.Server{
 		Handler:   mux,
 		TLSConfig: tlsConfig,
