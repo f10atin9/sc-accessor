@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
-	"storageclass-accessor/webhook"
 
 	"k8s.io/klog/v2"
+	"storageclass-accessor/webhook"
 )
 
 func main() {

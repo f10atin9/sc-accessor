@@ -8,10 +8,11 @@ COPY go.sum go.sum
 
 RUN go mod download
 
-COPY cmd/ cmd/
+COPY main.go main.go
 COPY webhook/ webhook/
+COPY client/ client/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o storageclass-accessor ./cmd/main.go
+RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o storageclass-accessor main.go
 
 ENTRYPOINT ["/storageclass-accessor"]
