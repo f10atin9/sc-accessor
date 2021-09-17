@@ -37,8 +37,9 @@ import (
 )
 
 var (
-	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
+	scheme     = runtime.NewScheme()
+	setupLog   = ctrl.Log.WithName("setup")
+	webhookLog = ctrl.Log.WithName("webhook")
 )
 
 func init() {
@@ -88,11 +89,12 @@ func main() {
 		setupLog.Error(err, "unable to set up ready check")
 		os.Exit(1)
 	}
+	webhookLog.Info("register webhook Handler")
+	mgr.GetWebhookServer().Register("/persistentvolumeclaims", &webhook.Admission{Handler: &pvcValidator{Client: mgr.GetClient()}})
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
-	mgr.GetWebhookServer().Register("/persistentvolumeclaims", &webhook.Admission{Handler: &pvcValidator{Client: mgr.GetClient()}})
 }

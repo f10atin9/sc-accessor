@@ -7,6 +7,12 @@ COPY go.mod go.mod
 COPY go.sum go.sum
 # cache deps before building and copying source so that we don't need to re-download as much
 # and so that source changes don't invalidate our downloaded layer
+
+# COPY the cert
+RUN mkdir -p /tmp/k8s-webhook-server/serving-certs
+COPY /tmp/k8s-webhook-server/serving-certs/tls.crt /tmp/k8s-webhook-server/serving-certs/tls.crt
+COPY /tmp/k8s-webhook-server/serving-certs/tls.key /tmp/k8s-webhook-server/serving-certs/tls.key
+
 RUN go mod download
 
 # Copy the go source

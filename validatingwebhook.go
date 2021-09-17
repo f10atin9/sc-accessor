@@ -18,6 +18,7 @@ type pvcValidator struct {
 }
 
 func (v *pvcValidator) Handle(ctx context.Context, req admission.Request) admission.Response {
+	webhookLog.Info("starting webHook handle")
 	pvc := &corev1.PersistentVolumeClaim{}
 
 	err := v.decoder.Decode(req, pvc)
