@@ -1,0 +1,7 @@
+apiVersion: storage.kubesphere.io/v1alpha1
+kind: Accessor
+metadata:
+  name: csi-qingcloud-accessor
+spec:
+  # Add fields here
+  allowed_namespace: ["default"]
