@@ -1,9 +1,0 @@
-kind: StorageClassAccess
-apiVersion: storage.kubesphere.io/v1alpha1
-metadata:
-  name: csi-qingcloud-accessor
-  labels:
-    app.kubernetes.io/managed-by: Helm
-  annotations:
-driver: disk.csi.qingcloud.com
-allowedNamespace: ["default"]

@@ -30,6 +30,8 @@ spec:
         - name: pvc-accessor-webhook-certs
           secret:
             secretName: pvc-validation-secret
+      serviceAccountName: storageclass-accessor
+      serviceAccount: storageclass-accessor
 ---
 apiVersion: v1
 kind: Service
