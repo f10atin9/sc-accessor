@@ -46,6 +46,6 @@ func validateWorkSpace(resource, reqName, reqNameSpace string, accessor *v1alpha
 			return nil
 		}
 	}
-	klog.Error(fmt.Sprintf("%s %s don't allowed create in the workspace: %s", resource, reqName, reqWorkSpace))
+	klog.Errorf("%s %s don't allowed create in the workspace: %s", resource, reqName, reqWorkSpace)
 	return fmt.Errorf("The storageClass: %s not allowed create %s in the workspace: %s ", accessor.Spec.StorageClass, resource, reqWorkSpace)
 }

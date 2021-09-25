@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	v1 "k8s.io/api/admission/v1"
-	"k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog/v2"
 	"net/http"
@@ -38,18 +37,16 @@ func init() {
 	CmdWebhook.MarkFlagRequired("tls-private-key-file")
 }
 
-// admitv1beta1Func handles a v1 admission
-type admitv1Func func(v1.AdmissionReview) *v1.AdmissionResponse
+// admitV1beta1Func handles a v1 admission
+type admitV1Func func(v1.AdmissionReview) *v1.AdmissionResponse
 
 // admitHandler is a handler, for both validators and mutators, that supports multiple admission review versions
 type admitHandler struct {
-	v1 admitv1Func
+	v1 admitV1Func
 }
 
-func newDelegateToV1AdmitHandler(f admitv1Func) admitHandler {
-	return admitHandler{
-		v1: f,
-	}
+func newDelegateToV1AdmitHandler(f admitV1Func) admitHandler {
+	return admitHandler{v1: f}
 }
 
 func server(w http.ResponseWriter, r *http.Request, admit admitHandler) {
@@ -90,18 +87,7 @@ func server(w http.ResponseWriter, r *http.Request, admit admitHandler) {
 
 	var responseObj runtime.Object
 	switch *gvk {
-	case v1beta1.SchemeGroupVersion.WithKind("AdmissionReview"):
-		requestedAdmissionReview, ok := obj.(*v1beta1.AdmissionReview)
-		if !ok {
-			msg := fmt.Sprintf("Expected v1beta1.AdmissionReview but got: %T", obj)
-			klog.Errorf(msg)
-			http.Error(w, msg, http.StatusBadRequest)
-			return
-		}
-		responseAdmissionReview := &v1beta1.AdmissionReview{}
-		responseAdmissionReview.SetGroupVersionKind(*gvk)
-		responseAdmissionReview.Response.UID = requestedAdmissionReview.Request.UID
-		responseObj = responseAdmissionReview
+	// TODO v1beta1 admissionReview
 	case v1.SchemeGroupVersion.WithKind("AdmissionReview"):
 		requestedAdmissionReview, ok := obj.(*v1.AdmissionReview)
 		if !ok {
@@ -123,6 +109,9 @@ func server(w http.ResponseWriter, r *http.Request, admit admitHandler) {
 	}
 
 	klog.V(2).Info(fmt.Sprintf("sending response: %v", responseObj))
+	// TODO DEL
+	fmt.Printf("\nsending response: %v \n", responseObj)
+
 	respBytes, err := json.Marshal(responseObj)
 	if err != nil {
 		klog.Error(err)
@@ -133,6 +122,8 @@ func server(w http.ResponseWriter, r *http.Request, admit admitHandler) {
 	if _, err := w.Write(respBytes); err != nil {
 		klog.Error(err)
 	}
+	// TODO DEL
+	fmt.Println("respW:", w)
 }
 
 func serverPVCRequest(w http.ResponseWriter, r *http.Request) {
@@ -147,7 +138,6 @@ func startServer(ctx context.Context, tlsConfig *tls.Config, cw *CertWatcher) er
 		}
 	}()
 
-	fmt.Println("Starting webhook server")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/persistentvolumeclaims", serverPVCRequest)
 	srv := &http.Server{
@@ -160,7 +150,6 @@ func startServer(ctx context.Context, tlsConfig *tls.Config, cw *CertWatcher) er
 	if err != nil {
 		return err
 	}
-
 	return srv.Serve(listener)
 }
 func main(cmd *cobra.Command, args []string) {
