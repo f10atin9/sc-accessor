@@ -2,7 +2,6 @@ package webhook
 
 import (
 	"context"
-	"fmt"
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -20,15 +19,14 @@ var reviewResponse = &admissionv1.AdmissionResponse{
 }
 
 func admitPVC(ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
-	klog.V(2).Info("admitting pvc")
+	klog.Info("admitting pvc")
 
-	if !(ar.Request.Operation == admissionv1.Update || ar.Request.Operation == admissionv1.Create) {
+	if !(ar.Request.Operation == admissionv1.Delete || ar.Request.Operation == admissionv1.Create) {
 		return reviewResponse
 	}
 
 	raw := ar.Request.Object.Raw
-	//oldRaw := ar.Request.OldObject.Raw
-
+	klog.Info("raw :", string(raw))
 	deserializer := codecs.UniversalDeserializer()
 	pvc := &corev1.PersistentVolumeClaim{}
 	if _, _, err := deserializer.Decode(raw, nil, pvc); err != nil {
@@ -40,22 +38,11 @@ func admitPVC(ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
 }
 
 func decidePVCV1(pvc *corev1.PersistentVolumeClaim) *admissionv1.AdmissionResponse {
-	if err := ValidateV1PVC(pvc); err != nil {
-		reviewResponse.Allowed = false
-		reviewResponse.Result.Message = err.Error()
-	}
-	return reviewResponse
-}
-
-func ValidateV1PVC(pvc *corev1.PersistentVolumeClaim) error {
-	storageClassName := *pvc.Spec.StorageClassName
-	namespace := pvc.Namespace
-	// TODO: GET CR by accessor Name and validate
+	// get config
 	cfg, err := config.GetConfig()
 	if err != nil {
-		return err
+		return toV1AdmissionResponse(err)
 	}
-
 	var cli client.Client
 	opts := client.Options{}
 	scheme := runtime.NewScheme()
@@ -63,18 +50,20 @@ func ValidateV1PVC(pvc *corev1.PersistentVolumeClaim) error {
 	opts.Scheme = scheme
 	cli, err = client.New(cfg, opts)
 	if err != nil {
-		return err
+		return toV1AdmissionResponse(err)
+	}
+	accessor := &v1alpha1.Accessor{}
+	err = cli.Get(context.Background(), types.NamespacedName{Namespace: "", Name: *pvc.Spec.StorageClassName + "-accessor"}, accessor)
+	if err != nil {
+		return toV1AdmissionResponse(err)
 	}
 
-	accessor := &v1alpha1.Accessor{}
-	err = cli.Get(context.Background(), types.NamespacedName{Namespace: "", Name: storageClassName + "-accessor"}, accessor)
-	if err != nil {
-		return err
+	if err := validateNameSpace("persistentVolumeClaim", pvc.Name, pvc.Namespace, accessor); err != nil {
+		return toV1AdmissionResponse(err)
 	}
-	for _, allowNS := range accessor.Spec.AllowedNamespace {
-		if allowNS == namespace {
-			return nil
-		}
+
+	if err := validateWorkSpace("persistentVolumeClaim", pvc.Name, pvc.Namespace, accessor); err != nil {
+		return toV1AdmissionResponse(err)
 	}
-	return fmt.Errorf("The storageClass: %s not allowed create pvc in the namespace: %s ", storageClassName, namespace)
+	return reviewResponse
 }

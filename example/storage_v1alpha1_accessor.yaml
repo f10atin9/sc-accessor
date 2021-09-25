@@ -4,4 +4,6 @@ metadata:
   name: csi-qingcloud-accessor
 spec:
   # Add fields here
+  storage_class: "csi-qingcloud"
   allowed_namespace: ["default"]
+  allowed_workspace: ["system-workspace"]

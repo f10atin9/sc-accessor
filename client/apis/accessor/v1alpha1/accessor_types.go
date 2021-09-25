@@ -25,7 +25,14 @@ import (
 
 // AccessorSpec defines the desired state of Accessor
 type AccessorSpec struct {
-	AllowedNamespace []string `json:"allowed_namespace" protobuf:"bytes,3,opt,name=allowednamespace"`
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+
+	// which storageClass is affected by accessor
+	StorageClass string `json:"storage_class"`
+
+	AllowedNamespace []string `json:"allowed_namespace" `
+	AllowedWorkspace []string `json:"allowed_workspace" `
 }
 
 //+kubebuilder:object:root=true

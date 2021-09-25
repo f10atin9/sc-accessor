@@ -34,24 +34,3 @@ var (
 	// AddToScheme adds the types in this group-version to the given scheme.
 	AddToScheme = SchemeBuilder.AddToScheme
 )
-
-// Resource takes an unqualified resource and returns a Group-qualified GroupResource.
-func Resource(resource string) schema.GroupResource {
-	return GroupVersion.WithResource(resource).GroupResource()
-}
-
-//func init() {
-//	// We only register manually written functions here. The registration of the
-//	// generated functions takes place in the generated files. The separation
-//	// makes the code compile even when the generated files are missing.
-//	SchemeBuilder.Register(addKnownTypes)
-//}
-//
-//// addKnownTypes adds the set of types defined in this package to the supplied scheme.
-//func addKnownTypes(scheme *runtime.Scheme) error {
-//	scheme.AddKnownTypes(GroupVersion,
-//		&Accessor{},
-//	)
-//	metav1.AddToGroupVersion(scheme, GroupVersion)
-//	return nil
-//}
