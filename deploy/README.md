@@ -42,7 +42,7 @@ These commands should be run from the top level directory.
 2. Patch the `ValidatingWebhookConfiguration` file from the template, filling in the CA bundle field.
 
     ```bash
-    cat ./deploy/admission-configuration-template | ./deploy/patch-ca-bundle.sh > ./deploy/admission-configuration.yaml
+    cat ./deploy/pvc-accessor-configuration-template | ./deploy/patch-ca-bundle.sh > ./deploy/admission-configuration.yaml
     ```
 
 3. Change the namespace in the generated `admission-configuration.yaml` file. Change the namespace in the service and deployment in the `webhook.yaml` file.

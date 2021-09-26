@@ -16,7 +16,9 @@ kubectl apply -f example
 
 ### 3.Patch the `ValidatingWebhookConfiguration` file from the template, filling in the CA bundle field.
 ```shell
-cat ./deploy/admission-configuration-template | ./deploy/patch-ca-bundle.sh > ./deploy/admission-configuration.yaml
+cat ./deploy/pvc-accessor-configuration-template | ./deploy/patch-ca-bundle.sh > ./deploy/pvc-accessor-configuration.yaml
+cat ./deploy/snapshot-accessor-configuration-template | ./deploy/patch-ca-bundle.sh > ./deploy/snapshot-accessor-configuration.yaml
+
 ```
 
 ### 4.build docker images

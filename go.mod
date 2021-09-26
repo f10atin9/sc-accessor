@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/fsnotify/fsnotify v1.4.9
+	github.com/kubernetes-csi/external-snapshotter/client/v4 v4.2.0
 	github.com/spf13/cobra v1.2.1
 	k8s.io/api v0.22.1
 	k8s.io/apimachinery v0.22.1

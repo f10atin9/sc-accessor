@@ -109,8 +109,6 @@ func server(w http.ResponseWriter, r *http.Request, admit admitHandler) {
 	}
 
 	klog.V(2).Info(fmt.Sprintf("sending response: %v", responseObj))
-	// TODO DEL
-	fmt.Printf("\nsending response: %v \n", responseObj)
 
 	respBytes, err := json.Marshal(responseObj)
 	if err != nil {
@@ -122,12 +120,14 @@ func server(w http.ResponseWriter, r *http.Request, admit admitHandler) {
 	if _, err := w.Write(respBytes); err != nil {
 		klog.Error(err)
 	}
-	// TODO DEL
-	fmt.Println("respW:", w)
 }
 
 func serverPVCRequest(w http.ResponseWriter, r *http.Request) {
 	server(w, r, newDelegateToV1AdmitHandler(admitPVC))
+}
+
+func serverSnapshotsRequest(w http.ResponseWriter, r *http.Request) {
+	server(w, r, newDelegateToV1AdmitHandler(admitSnapshot))
 }
 
 func startServer(ctx context.Context, tlsConfig *tls.Config, cw *CertWatcher) error {
@@ -140,6 +140,7 @@ func startServer(ctx context.Context, tlsConfig *tls.Config, cw *CertWatcher) er
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/persistentvolumeclaims", serverPVCRequest)
+	mux.HandleFunc("/volumesnapshots", serverSnapshotsRequest)
 	srv := &http.Server{
 		Handler:   mux,
 		TLSConfig: tlsConfig,
