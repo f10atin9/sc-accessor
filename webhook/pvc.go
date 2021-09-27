@@ -11,6 +11,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
+type reqInfo struct {
+	resource         string
+	name             string
+	namespace        string
+	operator         string
+	storageClassName string
+}
+
 var reviewResponse = &admissionv1.AdmissionResponse{
 	Allowed: true,
 	Result:  &metav1.Status{},
@@ -59,12 +67,19 @@ func admitPVC(ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
 		}
 		newPVC = targetPVC
 	}
-	return decidePVCV1(newPVC)
+	reqPVC := reqInfo{
+		resource:         "persistentVolumeClaim",
+		name:             newPVC.Name,
+		namespace:        newPVC.Namespace,
+		operator:         string(ar.Request.Operation),
+		storageClassName: *newPVC.Spec.StorageClassName,
+	}
+	return decidePVCV1(reqPVC)
 }
 
-func decidePVCV1(pvc *corev1.PersistentVolumeClaim) *admissionv1.AdmissionResponse {
+func decidePVCV1(pvc reqInfo) *admissionv1.AdmissionResponse {
 
-	accessor, err := getAccessor(*pvc.Spec.StorageClassName)
+	accessor, err := getAccessor(pvc.storageClassName)
 	if err != nil {
 		return toV1AdmissionResponse(err)
 	} else if accessor == nil {
@@ -72,11 +87,11 @@ func decidePVCV1(pvc *corev1.PersistentVolumeClaim) *admissionv1.AdmissionRespon
 		return reviewResponse
 	}
 
-	if err = validateNameSpace("persistentVolumeClaim", pvc.Name, pvc.Namespace, accessor); err != nil {
+	if err = validateNameSpace(pvc, accessor); err != nil {
 		return toV1AdmissionResponse(err)
 	}
 
-	if err = validateWorkSpace("persistentVolumeClaim", pvc.Name, pvc.Namespace, accessor); err != nil {
+	if err = validateWorkSpace(pvc, accessor); err != nil {
 		return toV1AdmissionResponse(err)
 	}
 	return reviewResponse

@@ -12,26 +12,37 @@ import (
 	"storageclass-accessor/client/apis/accessor/v1alpha1"
 )
 
-func validateNameSpace(resource, reqName, reqNameSpace string, accessor *v1alpha1.Accessor) error {
+func validateNameSpace(reqResource reqInfo, accessor *v1alpha1.Accessor) error {
 	klog.Info("start validate namespace")
+
+	//If not set, all namespace are allowed by default
+	if len(accessor.Spec.AllowedNamespace) == 0 {
+		return nil
+	}
+
 	for _, allowedNS := range accessor.Spec.AllowedNamespace {
-		if allowedNS == reqNameSpace {
+		if allowedNS == reqResource.namespace {
 			return nil
 		}
 	}
-	klog.Error(fmt.Sprintf("%s %s don't allowed create in the namespace: %s", resource, reqName, reqNameSpace))
-	return fmt.Errorf("The storageClass: %s not allowed create %s in the namespace: %s ", accessor.Spec.StorageClass, resource, reqNameSpace)
+	klog.Error(fmt.Sprintf("%s %s does not allowed %s in the namespace: %s", reqResource.resource, reqResource.name, reqResource.operator, reqResource.namespace))
+	return fmt.Errorf("The storageClass: %s does not allowed %s %s %s in the namespace: %s ", reqResource.storageClassName, reqResource.operator, reqResource.resource, reqResource.name, reqResource.namespace)
 }
 
-func validateWorkSpace(resource, reqName, reqNameSpace string, accessor *v1alpha1.Accessor) error {
+func validateWorkSpace(reqResource reqInfo, accessor *v1alpha1.Accessor) error {
 	klog.Info("start validate workspace")
+
+	//If not set, all workspace are allowed by default
+	if len(accessor.Spec.AllowedWorkspace) == 0 {
+		return nil
+	}
 	cli, err := client.New(config.GetConfigOrDie(), client.Options{})
 	if err != nil {
 		klog.Error("init a client failed, err:", err)
 		return err
 	}
 	ns := &corev1.Namespace{}
-	err = cli.Get(context.Background(), types.NamespacedName{Namespace: "", Name: reqNameSpace}, ns)
+	err = cli.Get(context.Background(), types.NamespacedName{Namespace: "", Name: reqResource.namespace}, ns)
 	if err != nil {
 		klog.Error("client get namespace failed, err:", err)
 		return err
@@ -47,8 +58,8 @@ func validateWorkSpace(resource, reqName, reqNameSpace string, accessor *v1alpha
 			return nil
 		}
 	}
-	klog.Errorf("%s %s don't allowed create in the workspace: %s", resource, reqName, reqWorkSpace)
-	return fmt.Errorf("The storageClass: %s not allowed create %s in the workspace: %s ", accessor.Spec.StorageClass, resource, reqWorkSpace)
+	klog.Error(fmt.Sprintf("%s %s does not allowed %s in the workspace: %s", reqResource.resource, reqResource.name, reqResource.operator, reqWorkSpace))
+	return fmt.Errorf("The storageClass: %s does not allowed %s %s %s in the workspace: %s ", reqResource.storageClassName, reqResource.operator, reqResource.resource, reqResource.name, reqWorkSpace)
 }
 
 func getAccessor(storageClassName string) (*v1alpha1.Accessor, error) {

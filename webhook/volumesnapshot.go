@@ -64,11 +64,18 @@ func admitSnapshot(ar admissionv1.AdmissionReview) *admissionv1.AdmissionRespons
 		}
 		newSnapshot = snapshot
 	}
-	return decideSnapshot(newSnapshot)
+	reqSnapshot := reqInfo{
+		resource:         "volumeSnapshot",
+		name:             newSnapshot.Name,
+		namespace:        newSnapshot.Namespace,
+		operator:         string(ar.Request.Operation),
+		storageClassName: *newSnapshot.Spec.VolumeSnapshotClassName,
+	}
+	return decideSnapshot(reqSnapshot)
 }
 
-func decideSnapshot(snapshot *snapshotv1.VolumeSnapshot) *admissionv1.AdmissionResponse {
-	accessor, err := getAccessor(*snapshot.Spec.VolumeSnapshotClassName)
+func decideSnapshot(snapshot reqInfo) *admissionv1.AdmissionResponse {
+	accessor, err := getAccessor(snapshot.storageClassName)
 	if err != nil {
 		//TODO If not found , pass or not?
 		return toV1AdmissionResponse(err)
@@ -76,16 +83,17 @@ func decideSnapshot(snapshot *snapshotv1.VolumeSnapshot) *admissionv1.AdmissionR
 		return reviewResponse
 	}
 
-	if err = validateNameSpace("volumeSnapshot", snapshot.Name, snapshot.Namespace, accessor); err != nil {
+	if err = validateNameSpace(snapshot, accessor); err != nil {
 		return toV1AdmissionResponse(err)
 	}
 
-	if err = validateWorkSpace("volumeSnapshot", snapshot.Name, snapshot.Namespace, accessor); err != nil {
+	if err = validateWorkSpace(snapshot, accessor); err != nil {
 		return toV1AdmissionResponse(err)
 	}
 	return reviewResponse
 }
 
+//TODO getStorageClassByVolumeSnapshotClass
 //func getStorageClassByVolumeSnapshotClass(snapshotClassName string) (storageclassName string, err error) {
 //	var cli client.Client
 //	opts := client.Options{}

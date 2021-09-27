@@ -18,6 +18,6 @@ webhooks:
     caBundle: ${CA_BUNDLE}
   admissionReviewVersions: ["v1"]
   sideEffects: None
-  failurePolicy: Ignore # We recommend switching to Fail only after successful installation of the webhook server and webhook.
-  timeoutSeconds: 5 # This will affect the latency and performance. Finetune this value based on your application's tolerance.
+  failurePolicy: Ignore
+  timeoutSeconds: 5
 
