@@ -64,6 +64,7 @@ func admitSnapshot(ar admissionv1.AdmissionReview) *admissionv1.AdmissionRespons
 		}
 		newSnapshot = snapshot
 	}
+
 	reqSnapshot := reqInfo{
 		resource:         "volumeSnapshot",
 		name:             newSnapshot.Name,
@@ -83,6 +84,7 @@ func decideSnapshot(snapshot reqInfo) *admissionv1.AdmissionResponse {
 		return reviewResponse
 	}
 
+
 	if err = validateNameSpace(snapshot, accessor); err != nil {
 		return toV1AdmissionResponse(err)
 	}
@@ -93,7 +95,9 @@ func decideSnapshot(snapshot reqInfo) *admissionv1.AdmissionResponse {
 	return reviewResponse
 }
 
+
 //TODO getStorageClassByVolumeSnapshotClass
+
 //func getStorageClassByVolumeSnapshotClass(snapshotClassName string) (storageclassName string, err error) {
 //	var cli client.Client
 //	opts := client.Options{}
