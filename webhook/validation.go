@@ -12,6 +12,7 @@ import (
 	"storageclass-accessor/client/apis/accessor/v1alpha1"
 )
 
+
 func validateNameSpace(reqResource reqInfo, accessor *v1alpha1.Accessor) error {
 	klog.Info("start validate namespace")
 
@@ -58,6 +59,7 @@ func validateWorkSpace(reqResource reqInfo, accessor *v1alpha1.Accessor) error {
 			return nil
 		}
 	}
+
 	klog.Error(fmt.Sprintf("%s %s does not allowed %s in the workspace: %s", reqResource.resource, reqResource.name, reqResource.operator, reqWorkSpace))
 	return fmt.Errorf("The storageClass: %s does not allowed %s %s %s in the workspace: %s ", reqResource.storageClassName, reqResource.operator, reqResource.resource, reqResource.name, reqWorkSpace)
 }

@@ -11,6 +11,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
+
 type reqInfo struct {
 	resource         string
 	name             string
@@ -18,6 +19,7 @@ type reqInfo struct {
 	operator         string
 	storageClassName string
 }
+
 
 var reviewResponse = &admissionv1.AdmissionResponse{
 	Allowed: true,
@@ -67,6 +69,7 @@ func admitPVC(ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
 		}
 		newPVC = targetPVC
 	}
+
 	reqPVC := reqInfo{
 		resource:         "persistentVolumeClaim",
 		name:             newPVC.Name,
@@ -80,6 +83,7 @@ func admitPVC(ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
 func decidePVCV1(pvc reqInfo) *admissionv1.AdmissionResponse {
 
 	accessor, err := getAccessor(pvc.storageClassName)
+
 	if err != nil {
 		return toV1AdmissionResponse(err)
 	} else if accessor == nil {
@@ -92,6 +96,7 @@ func decidePVCV1(pvc reqInfo) *admissionv1.AdmissionResponse {
 	}
 
 	if err = validateWorkSpace(pvc, accessor); err != nil {
+
 		return toV1AdmissionResponse(err)
 	}
 	return reviewResponse
