@@ -12,16 +12,15 @@ import (
 	"storageclass-accessor/client/apis/accessor/v1alpha1"
 )
 
-
 func validateNameSpace(reqResource reqInfo, accessor *v1alpha1.Accessor) error {
 	klog.Info("start validate namespace")
 
 	//If not set, all namespace are allowed by default
-	if len(accessor.Spec.AllowedNamespace) == 0 {
+	if len(accessor.Spec.GlobalRule.AllowedNamespace) == 0 {
 		return nil
 	}
 
-	for _, allowedNS := range accessor.Spec.AllowedNamespace {
+	for _, allowedNS := range accessor.Spec.GlobalRule.AllowedNamespace {
 		if allowedNS == reqResource.namespace {
 			return nil
 		}
@@ -34,7 +33,7 @@ func validateWorkSpace(reqResource reqInfo, accessor *v1alpha1.Accessor) error {
 	klog.Info("start validate workspace")
 
 	//If not set, all workspace are allowed by default
-	if len(accessor.Spec.AllowedWorkspace) == 0 {
+	if len(accessor.Spec.GlobalRule.AllowedWorkspace) == 0 {
 		return nil
 	}
 	cli, err := client.New(config.GetConfigOrDie(), client.Options{})
@@ -54,7 +53,7 @@ func validateWorkSpace(reqResource reqInfo, accessor *v1alpha1.Accessor) error {
 		klog.Error("Can't get the workspace from the namespace " + ns.Name)
 		return err
 	}
-	for _, allowWorkSpace := range accessor.Spec.AllowedWorkspace {
+	for _, allowWorkSpace := range accessor.Spec.GlobalRule.AllowedWorkspace {
 		if reqWorkSpace == allowWorkSpace {
 			return nil
 		}

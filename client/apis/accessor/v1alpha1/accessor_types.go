@@ -23,16 +23,37 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// +kubebuilder:validation:Enum=Label;Annotation
+type FieldType string
+
+const (
+	Label      FieldType = "Label"
+	Annotation FieldType = "Annotation"
+)
+
 // AccessorSpec defines the desired state of Accessor
 type AccessorSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// which storageClass is affected by accessor
-	StorageClass string `json:"storage_class"`
+	// Foo is an example field of Accessor. Edit accessor_types.go to remove/update
+	StorageClassName string      `json:"storage_class_name"`
+	GlobalRule       GlobalRule  `json:"global_rule"`
+	GroupRule        []GroupRule `json:"group_rule"`
+}
 
-	AllowedNamespace []string `json:"allowed_namespace" `
-	AllowedWorkspace []string `json:"allowed_workspace" `
+type GlobalRule struct {
+	AllowedNamespace []string `json:"allowed_namespace"`
+	AllowedWorkspace []string `json:"allowed_workspace"`
+}
+
+type GroupRule struct {
+	Name           string    `json:"name"`
+	Field          FieldType `json:"field"`
+	Key            string    `json:"key"`
+	Value          []string  `json:"value"`
+	AllowNamespace []string  `json:"allow_namespace"`
+	AllowWorkspace []string  `json:"allow_workspace"`
 }
 
 //+kubebuilder:object:root=true
