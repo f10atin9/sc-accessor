@@ -11,7 +11,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-
 type reqInfo struct {
 	resource         string
 	name             string
@@ -19,7 +18,6 @@ type reqInfo struct {
 	operator         string
 	storageClassName string
 }
-
 
 var reviewResponse = &admissionv1.AdmissionResponse{
 	Allowed: true,
@@ -95,9 +93,5 @@ func decidePVCV1(pvc reqInfo) *admissionv1.AdmissionResponse {
 		return toV1AdmissionResponse(err)
 	}
 
-	if err = validateWorkSpace(pvc, accessor); err != nil {
-
-		return toV1AdmissionResponse(err)
-	}
 	return reviewResponse
 }

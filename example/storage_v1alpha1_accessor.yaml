@@ -3,7 +3,15 @@ kind: Accessor
 metadata:
   name: csi-qingcloud-accessor
 spec:
-  # Add fields here
-  storage_class: "csi-qingcloud"
-  allowed_namespace: ["default"]
-  allowed_workspace: ["system-workspace"]
+  storage_class_name: "csi-qingcloud"
+  namespace_selector:
+    field_selector:
+      - fieldExpressions:
+          - field: "Name"
+            operator: "In"
+            values: ["default", ""]
+    label_selector:
+      - matchExpressions:
+          - key: "app"
+            operator: "In"
+            values: "test-accessor"
