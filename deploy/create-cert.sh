@@ -71,8 +71,8 @@ DNS.2 = ${service}.${namespace}
 DNS.3 = ${service}.${namespace}.svc
 EOF
 
-openssl genrsa -out ${tmpdir}/server-key.pem 2048
-openssl req -new -key ${tmpdir}/server-key.pem -subj "/CN=${service}.${namespace}.svc" -out ${tmpdir}/server.csr -config ${tmpdir}/csr.conf
+openssl genrsa -out ${tmpdir}/key.pem 2048
+openssl req -new -key ${tmpdir}/key.pem -subj "/CN=${service}.${namespace}.svc" -out ${tmpdir}/server.csr -config ${tmpdir}/csr.conf
 
 # clean-up any previously created CSR for our service. Ignore errors if not present.
 kubectl delete csr ${csrName} 2>/dev/null || true
@@ -115,12 +115,12 @@ if [[ ${serverCert} == '' ]]; then
     echo "ERROR: After approving csr ${csrName}, the signed certificate did not appear on the resource. Giving up after 10 attempts." >&2
     exit 1
 fi
-echo ${serverCert} | openssl base64 -d -A -out ${tmpdir}/server-cert.pem
+echo ${serverCert} | openssl base64 -d -A -out ${tmpdir}/cert.pem
 
 
 # create the secret with CA cert and server cert/key
 kubectl create secret generic ${secret} \
-        --from-file=key.pem=${tmpdir}/server-key.pem \
-        --from-file=cert.pem=${tmpdir}/server-cert.pem \
+        --from-file=key.pem=${tmpdir}/key.pem \
+        --from-file=cert.pem=${tmpdir}/cert.pem \
         --dry-run=client -o yaml |
     kubectl -n ${namespace} apply -f -
