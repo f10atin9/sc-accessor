@@ -36,36 +36,9 @@ spec:
             spec:
               description: AccessorSpec defines the desired state of Accessor
               properties:
-                namespace_selector:
+                namespaceSelector:
                   properties:
-                    annotation_selector:
-                      items:
-                        properties:
-                          matchExpressions:
-                            items:
-                              properties:
-                                key:
-                                  type: string
-                                operator:
-                                  enum:
-                                    - In
-                                    - NotIn
-                                  type: string
-                                values:
-                                  items:
-                                    type: string
-                                  type: array
-                              required:
-                                - key
-                                - operator
-                                - values
-                              type: object
-                            type: array
-                        required:
-                          - matchExpressions
-                        type: object
-                      type: array
-                    field_selector:
+                    fieldSelector:
                       items:
                         properties:
                           fieldExpressions:
@@ -95,7 +68,7 @@ spec:
                           - fieldExpressions
                         type: object
                       type: array
-                    label_selector:
+                    labelSelector:
                       items:
                         properties:
                           matchExpressions:
@@ -123,11 +96,11 @@ spec:
                         type: object
                       type: array
                   type: object
-                storage_class_name:
+                storageClassName:
                   type: string
               required:
-                - namespace_selector
-                - storage_class_name
+                - namespaceSelector
+                - storageClassName
               type: object
           type: object
       served: true

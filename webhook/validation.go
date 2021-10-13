@@ -20,16 +20,10 @@ func validateNameSpace(reqResource reqInfo, accessor *v1alpha1.Accessor) error {
 		klog.Error(err)
 		return err
 	}
-	var fieldPass, labelPass, annotationPass bool
-	fieldPass = checkField(ns, accessor.Spec.NameSpaceSelector.FieldSelector)
-	if len(accessor.Spec.NameSpaceSelector.LabelSelector) == 0 && len(accessor.Spec.NameSpaceSelector.AnnotationSelector) == 0 {
-		labelPass = true
-		annotationPass = true
-	} else {
-		labelPass = selector(ns.Labels, accessor.Spec.NameSpaceSelector.LabelSelector)
-		annotationPass = selector(ns.Annotations, accessor.Spec.NameSpaceSelector.AnnotationSelector)
-	}
-	if fieldPass && (labelPass || annotationPass) {
+	var fieldPass, labelPass bool
+	fieldPass = matchField(ns, accessor.Spec.NameSpaceSelector.FieldSelector)
+	labelPass = matchLabel(ns.Labels, accessor.Spec.NameSpaceSelector.LabelSelector)
+	if fieldPass && labelPass {
 		return nil
 	}
 

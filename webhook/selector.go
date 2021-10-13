@@ -5,7 +5,10 @@ import (
 	"storageclass-accessor/client/apis/accessor/v1alpha1"
 )
 
-func selector(info map[string]string, expressions []v1alpha1.MatchExpressions) bool {
+func matchLabel(info map[string]string, expressions []v1alpha1.MatchExpressions) bool {
+	if len(expressions) == 0 {
+		return true
+	}
 
 	for _, rule := range expressions {
 		rulePass := true
@@ -24,7 +27,7 @@ func selector(info map[string]string, expressions []v1alpha1.MatchExpressions) b
 	return false
 }
 
-func checkField(ns *corev1.Namespace, expressions []v1alpha1.FieldExpressions) bool {
+func matchField(ns *corev1.Namespace, expressions []v1alpha1.FieldExpressions) bool {
 	//If not set limit, default pass
 	if len(expressions) == 0 {
 		return true

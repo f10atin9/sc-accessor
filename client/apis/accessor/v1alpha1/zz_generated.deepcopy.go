@@ -192,13 +192,6 @@ func (in *NameSpaceList) DeepCopyInto(out *NameSpaceList) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
-	if in.AnnotationSelector != nil {
-		in, out := &in.AnnotationSelector, &out.AnnotationSelector
-		*out = make([]MatchExpressions, len(*in))
-		for i := range *in {
-			(*in)[i].DeepCopyInto(&(*out)[i])
-		}
-	}
 	if in.FieldSelector != nil {
 		in, out := &in.FieldSelector, &out.FieldSelector
 		*out = make([]FieldExpressions, len(*in))

@@ -38,14 +38,13 @@ const (
 
 // AccessorSpec defines the desired state of Accessor
 type AccessorSpec struct {
-	StorageClassName  string        `json:"storage_class_name"`
-	NameSpaceSelector NameSpaceList `json:"namespace_selector"`
+	StorageClassName  string        `json:"storageClassName"`
+	NameSpaceSelector NameSpaceList `json:"namespaceSelector"`
 }
 
 type NameSpaceList struct {
-	LabelSelector      []MatchExpressions `json:"label_selector"`
-	AnnotationSelector []MatchExpressions `json:"annotation_selector"`
-	FieldSelector      []FieldExpressions `json:"field_selector"`
+	LabelSelector []MatchExpressions `json:"labelSelector"`
+	FieldSelector []FieldExpressions `json:"fieldSelector"`
 }
 
 type FieldExpressions struct {
