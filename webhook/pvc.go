@@ -83,9 +83,10 @@ func decidePVCV1(pvc reqInfo) *admissionv1.AdmissionResponse {
 	accessor, err := getAccessor(pvc.storageClassName)
 
 	if err != nil {
+		klog.Error("get accessor failed, err:", err)
 		return toV1AdmissionResponse(err)
 	} else if accessor == nil {
-		//TODO waiting for test "accessor == nil "
+		klog.Info("Not Found accessor for the storageClass:", pvc.storageClassName)
 		return reviewResponse
 	}
 

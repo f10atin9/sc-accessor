@@ -9,4 +9,4 @@ spec:
       - fieldExpressions:
           - field: "Name"
             operator: "In"
-            values: ["default", ""]
+            values: ["default"]
