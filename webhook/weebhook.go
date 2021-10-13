@@ -126,10 +126,6 @@ func serverPVCRequest(w http.ResponseWriter, r *http.Request) {
 	server(w, r, newDelegateToV1AdmitHandler(admitPVC))
 }
 
-func serverSnapshotsRequest(w http.ResponseWriter, r *http.Request) {
-	server(w, r, newDelegateToV1AdmitHandler(admitSnapshot))
-}
-
 func startServer(ctx context.Context, tlsConfig *tls.Config, cw *CertWatcher) error {
 	go func() {
 		klog.Info("Starting certificate watcher")
@@ -140,7 +136,6 @@ func startServer(ctx context.Context, tlsConfig *tls.Config, cw *CertWatcher) er
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/persistentvolumeclaims", serverPVCRequest)
-	mux.HandleFunc("/volumesnapshots", serverSnapshotsRequest)
 	srv := &http.Server{
 		Handler:   mux,
 		TLSConfig: tlsConfig,

@@ -12,56 +12,37 @@ import (
 	"storageclass-accessor/client/apis/accessor/v1alpha1"
 )
 
-
 func validateNameSpace(reqResource reqInfo, accessor *v1alpha1.Accessor) error {
 	klog.Info("start validate namespace")
-
-	//If not set, all namespace are allowed by default
-	if len(accessor.Spec.AllowedNamespace) == 0 {
+	//accessor, err := getAccessor()
+	ns, err := getNameSpace(reqResource.namespace)
+	if err != nil {
+		klog.Error(err)
+		return err
+	}
+	var fieldPass, labelPass bool
+	fieldPass = matchField(ns, accessor.Spec.NameSpaceSelector.FieldSelector)
+	labelPass = matchLabel(ns.Labels, accessor.Spec.NameSpaceSelector.LabelSelector)
+	if fieldPass && labelPass {
 		return nil
 	}
 
-	for _, allowedNS := range accessor.Spec.AllowedNamespace {
-		if allowedNS == reqResource.namespace {
-			return nil
-		}
-	}
 	klog.Error(fmt.Sprintf("%s %s does not allowed %s in the namespace: %s", reqResource.resource, reqResource.name, reqResource.operator, reqResource.namespace))
 	return fmt.Errorf("The storageClass: %s does not allowed %s %s %s in the namespace: %s ", reqResource.storageClassName, reqResource.operator, reqResource.resource, reqResource.name, reqResource.namespace)
 }
 
-func validateWorkSpace(reqResource reqInfo, accessor *v1alpha1.Accessor) error {
-	klog.Info("start validate workspace")
-
-	//If not set, all workspace are allowed by default
-	if len(accessor.Spec.AllowedWorkspace) == 0 {
-		return nil
-	}
-	cli, err := client.New(config.GetConfigOrDie(), client.Options{})
+func getNameSpace(nameSpaceName string) (*corev1.Namespace, error) {
+	nsClient, err := client.New(config.GetConfigOrDie(), client.Options{})
 	if err != nil {
-		klog.Error("init a client failed, err:", err)
-		return err
+		return nil, err
 	}
 	ns := &corev1.Namespace{}
-	err = cli.Get(context.Background(), types.NamespacedName{Namespace: "", Name: reqResource.namespace}, ns)
+	err = nsClient.Get(context.Background(), types.NamespacedName{Namespace: "", Name: nameSpaceName}, ns)
 	if err != nil {
 		klog.Error("client get namespace failed, err:", err)
-		return err
+		return nil, err
 	}
-	var reqWorkSpace string
-	var exist bool
-	if reqWorkSpace, exist = ns.Labels["kubesphere.io/workspace"]; !exist {
-		klog.Error("Can't get the workspace from the namespace " + ns.Name)
-		return err
-	}
-	for _, allowWorkSpace := range accessor.Spec.AllowedWorkspace {
-		if reqWorkSpace == allowWorkSpace {
-			return nil
-		}
-	}
-
-	klog.Error(fmt.Sprintf("%s %s does not allowed %s in the workspace: %s", reqResource.resource, reqResource.name, reqResource.operator, reqWorkSpace))
-	return fmt.Errorf("The storageClass: %s does not allowed %s %s %s in the workspace: %s ", reqResource.storageClassName, reqResource.operator, reqResource.resource, reqResource.name, reqWorkSpace)
+	return ns, nil
 }
 
 func getAccessor(storageClassName string) (*v1alpha1.Accessor, error) {
@@ -79,12 +60,18 @@ func getAccessor(storageClassName string) (*v1alpha1.Accessor, error) {
 	if err != nil {
 		return nil, err
 	}
-	accessor := &v1alpha1.Accessor{}
+	accessorList := &v1alpha1.AccessorList{}
 
-	err = cli.Get(context.Background(), types.NamespacedName{Namespace: "", Name: storageClassName + "-accessor"}, accessor)
+	listOpt := []client.ListOption{}
+	err = cli.List(context.Background(), accessorList, listOpt...)
 	if err != nil {
-		//TODO If not found , pass or not?
+		// TODO If not found , pass or not?
 		return nil, err
 	}
-	return accessor, nil
+	for _, accessor := range accessorList.Items {
+		if accessor.Spec.StorageClassName == storageClassName {
+			return &accessor, nil
+		}
+	}
+	return nil, nil
 }

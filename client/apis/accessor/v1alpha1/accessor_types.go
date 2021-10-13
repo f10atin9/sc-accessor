@@ -20,19 +20,50 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+// +kubebuilder:validation:Enum=In;NotIn
+
+type Operator string
+
+// +kubebuilder:validation:Enum=Name;Phase
+
+type Field string
+
+const (
+	In    Operator = "In"
+	NotIn Operator = "NotIn"
+
+	Name  Field = "Name"
+	Phase Field = "Phase"
+)
 
 // AccessorSpec defines the desired state of Accessor
 type AccessorSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	StorageClassName  string        `json:"storageClassName"`
+	NameSpaceSelector NameSpaceList `json:"namespaceSelector"`
+}
 
-	// which storageClass is affected by accessor
-	StorageClass string `json:"storage_class"`
+type NameSpaceList struct {
+	LabelSelector []MatchExpressions `json:"labelSelector"`
+	FieldSelector []FieldExpressions `json:"fieldSelector"`
+}
 
-	AllowedNamespace []string `json:"allowed_namespace" `
-	AllowedWorkspace []string `json:"allowed_workspace" `
+type FieldExpressions struct {
+	FieldExpressions []FieldExpression `json:"fieldExpressions"`
+}
+type MatchExpressions struct {
+	MatchExpressions []MatchExpression `json:"matchExpressions"`
+}
+
+type MatchExpression struct {
+	Key      string   `json:"key"`
+	Operator Operator `json:"operator"`
+	Values   []string `json:"values"`
+}
+
+type FieldExpression struct {
+	Field    Field    `json:"field"`
+	Operator Operator `json:"operator"`
+	Values   []string `json:"values"`
 }
 
 //+kubebuilder:object:root=true
