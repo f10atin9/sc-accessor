@@ -19,7 +19,6 @@ Move cert.pem and key.pem to the path "/etc/storageclass-accessor-webhook/certs"
 ### 3.Patch the `ValidatingWebhookConfiguration` file from the template, filling in the CA bundle field.
 ```shell
 cat ./deploy/pvc-accessor-configuration-template | ./deploy/patch-ca-bundle.sh > ./deploy/pvc-accessor-configuration.yaml
-cat ./deploy/snapshot-accessor-configuration-template | ./deploy/patch-ca-bundle.sh > ./deploy/snapshot-accessor-configuration.yaml
 
 ```
 
