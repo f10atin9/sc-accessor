@@ -70,6 +70,9 @@ type FieldExpression struct {
 //+kubebuilder:subresource:status
 
 // Accessor is the Schema for the accessors API
+// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:printcolumn:name="StorageClass",type=string,JSONPath=`.spec.storageClassName`
+// +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 type Accessor struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
