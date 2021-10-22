@@ -80,19 +80,20 @@ func admitPVC(ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
 
 func decidePVCV1(pvc reqInfo) *admissionv1.AdmissionResponse {
 
-	accessor, err := getAccessor(pvc.storageClassName)
+	accessors, err := getAccessor(pvc.storageClassName)
 
 	if err != nil {
 		klog.Error("get accessor failed, err:", err)
 		return toV1AdmissionResponse(err)
-	} else if accessor == nil {
+	} else if len(accessors) == 0 {
 		klog.Info("Not Found accessor for the storageClass:", pvc.storageClassName)
 		return reviewResponse
 	}
 
-	if err = validateNameSpace(pvc, accessor); err != nil {
-		return toV1AdmissionResponse(err)
+	for _, accessor := range accessors {
+		if err = validateNameSpace(pvc, accessor); err != nil {
+			return toV1AdmissionResponse(err)
+		}
 	}
-
 	return reviewResponse
 }
