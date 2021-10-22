@@ -45,7 +45,7 @@ func getNameSpace(nameSpaceName string) (*corev1.Namespace, error) {
 	return ns, nil
 }
 
-func getAccessor(storageClassName string) (*v1alpha1.Accessor, error) {
+func getAccessor(storageClassName string) ([]*v1alpha1.Accessor, error) {
 	// get config
 	cfg, err := config.GetConfig()
 	if err != nil {
@@ -62,16 +62,17 @@ func getAccessor(storageClassName string) (*v1alpha1.Accessor, error) {
 	}
 	accessorList := &v1alpha1.AccessorList{}
 
-	listOpt := []client.ListOption{}
+	var listOpt []client.ListOption
 	err = cli.List(context.Background(), accessorList, listOpt...)
 	if err != nil {
 		// TODO If not found , pass or not?
 		return nil, err
 	}
+	list := make([]*v1alpha1.Accessor, 0)
 	for _, accessor := range accessorList.Items {
 		if accessor.Spec.StorageClassName == storageClassName {
-			return &accessor, nil
+			list = append(list, &accessor)
 		}
 	}
-	return nil, nil
+	return list, nil
 }
