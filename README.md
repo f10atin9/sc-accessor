@@ -1,11 +1,16 @@
 # storageclass-accessor
-Help storageClass to manage cluster resource.
+***
+## 
+The storageclass-accessor webhook is an HTTP callback which responds to admission requests.
+When creating and deleting the PVC, it will take out the accessor related to this storageclass, and the request will be allowed only when all accessors pass the verification.
+Users can create accessor and set namespaceSelector to achieve **namespace-level** management on the StorageClass to create pvc
 
-## install
+## Quick Start
+***
+The guide shows how to deploy StorageClass accessor webhook to the cluster. And provides an example accessor about csi-qingcloud.
 ### 1.install CRD and CR
 ```shell
-kubectl apply -f  client/config/crds
-kubectl apply -f example
+kubectl create -f  client/config/crds
 ```
 
 ### 2.create cert and secret
@@ -19,7 +24,6 @@ Move cert.pem and key.pem to the path "/etc/storageclass-accessor-webhook/certs"
 ### 3.Patch the `ValidatingWebhookConfiguration` file from the template, filling in the CA bundle field.
 ```shell
 cat ./deploy/pvc-accessor-configuration-template | ./deploy/patch-ca-bundle.sh > ./deploy/pvc-accessor-configuration.yaml
-
 ```
 
 ### 4.build docker images
@@ -31,3 +35,47 @@ docker build --network host -t f10atin9/storageclass-accessor:v1.0 .
 ```shell
 kubectl apply -f deploy
 ```
+
+### 6.apply example CR
+```shell
+kubectl apply -f example
+```
+
+## Next
+***
+If you need to customize the accessor rules, write the yaml file according to the example yaml and apply it to the cluster.The accessor rule will work when the StorageClass is requested
+
+## Example
+***
+This example yaml shows how to set the accessor, you can define your own namespaceSelector according to your needs
+```yaml
+apiVersion: storage.kubesphere.io/v1alpha1
+kind: Accessor
+metadata:
+  name: csi-qingcloud-accessor
+spec:
+  storageClassName: "csi-qingcloud"
+  namespaceSelector:
+    fieldSelector:
+      - fieldExpressions:
+          - field: "Name"
+            operator: "In"
+            values: ["default"]
+    labelSelector:
+      - matchExpressions:
+          - key: "app"
+            operator: "In"
+            values: ["test-app"]
+          - key: "role"
+            operator: "In"
+            values: ["admin", "user"]
+      - matchExpressions:
+          - key: "app"
+            operator: "In"
+            values: ["test-app2"]
+```
+
+- 1. When there are multiple rules in a fieldExpressions or matchExpressions, all the rules need to pass the verification to pass.
+- 2. If there are multiple fieldExpressions, only one of them needs to pass, and matchExpressions are the same.
+- 3. When both the fieldSelector and labelSelector pass, the namespaceSelector is judged to pass.
+- 4. If a StorageClass is mentioned by multiple accessors, it needs to pass all accessor rules.
