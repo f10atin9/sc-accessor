@@ -32,7 +32,7 @@ kubectl apply -f deploy
 ```
 
 ### 5.Write a CR
-Create your accessor according to your needs according to [Accessor CR](#Accessor CR) and [Example](#Example).
+Create your accessor according to your needs according to [Accessor CR](#accessor-cr) and [Example](#Example).
 
 ### 6.Apply CR
 Use the `kubectl apply` command to make the accessor you created work.
