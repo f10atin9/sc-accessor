@@ -32,7 +32,7 @@ kubectl apply -f deploy
 ```
 
 ### 5.Write a CR
-
+Create your accessor according to your needs according to [Accessor CR](#Accessor CR) and [Example](#Example).
 
 ### 6.Apply CR
 Use the `kubectl apply` command to make the accessor you created work.
@@ -100,7 +100,7 @@ spec:
 ```
 After applying this accessor, you can create the pvc of csi-qingcloud only in namespace.name which in this array :["NS1"]
 
-***
+
 More than one fieldExpressions are allowed in a fieldSelector.
 
 And multiple rules are also allowed in fieldExpressions
@@ -246,4 +246,4 @@ It is allowed to create pvc in a namespace that meets one of the following condi
  - (status.Phase in ["Active"]) **and** (have the key "app" label and in the value in ["app1"]) **and** (have the key "owner" label and the value in ["owner1", "owner2"])
  - (status.Phase in ["Active"]) **and** (have the key "app" label and in the value in ["app2", "app3"])
 ## Notice
-:warining: **Warning**:Too many accessors may cause unexpected errors in the webhook. It is recommended that one storageClass corresponds to one accessor.
+:warning: **Warning**:Too many accessors may cause unexpected errors in the webhook. It is recommended that one storageClass corresponds to one accessor.
