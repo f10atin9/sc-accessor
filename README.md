@@ -1,11 +1,26 @@
 # storageclass-accessor
-***
-## 
+
+## Contents
+- [Contents](#contents)
+- [Intro](#intro)
+- [Installation](#installation)
+  - [Quick start](#quick-start)
+  - [Accessor CR](#accessor-cr)
+- [Example](#example)
+  - [Only FieldSelector](#only-fieldselector)
+  - [Only LabelSelector](#only-labelselector)
+  - [Both FieldSelector and LabelSelector](#both-fieldselector-and-labelselector)
+- [Notice](#notice)
+
+# Intro
+
 The storageclass-accessor webhook is an HTTP callback which responds to admission requests.
 When creating and deleting the PVC, it will take out the accessor related to this storageclass, and the request will be allowed only when all accessors pass the verification.
 Users can create accessor and set namespaceSelector to achieve **namespace-level** management on the StorageClass to create pvc
 
-## Quick Start
+# Installation
+
+## Quick start
 ***
 The guide shows how to deploy StorageClass accessor webhook to the cluster. And provides an example accessor about csi-qingcloud.
 ### 1.install CRD and CR
@@ -43,47 +58,58 @@ Now you can try to create a PVC. If it is created in a namespace that is not all
 > Error from server: error when creating "PVC.yaml": admission webhook "pvc-accessor.storage.kubesphere.io" denied the request: The storageClass: **StorageClassName** does not allowed CREATE persistentVolumeClaim **PVC-NAME** in the namespace: **TARGET-NS**
 
 ## Accessor CR
-***
+
 A complete accessor should have the following fields:
+
+
  - spec.storageClassName
 
    The accessor knows the effective sc according to this field.
-   - spec.namespaceSelector
 
-     This field is used to fill in the limit of nameSpace, Including **labelSelector** and **fieldSelector**.
-       - spec.namespaceSelector.fieldSelector
 
-          Is an **array of fieldExpressions** .Manage whether nameSpace is available through the label of nameSpace.
-       - fieldExpressions
+ - spec.namespaceSelector
 
-         It's an **array of fieldRule** . Every rule in the array needs to be verified.
+   This field is used to fill in the limit of nameSpace, Including **labelSelector** and **fieldSelector**.
 
-         labelRule has the following fields:
 
-             1.field: String. Required. Currently supports selection through the "Name" and "Phase" fields.
-             2.operator: String. Required. Currently supports selection through the "In" and "NotIn" fields.
-             2.values: []String. Required. 
+ - spec.namespaceSelector.fieldSelector
+
+    Is an **array of fieldExpressions** .Manage whether nameSpace is available through the label of nameSpace.
+
+
+ - fieldExpressions
+
+   It's an **array of fieldRule** . Every rule in the array needs to be verified.
+
+   labelRule has the following fields:
+
+       1.field: String. Required. Currently supports selection through the "Name" and "Phase" fields.
+       2.operator: String. Required. Currently supports selection through the "In" and "NotIn" fields.
+       2.values: []String. Required. 
+
      
-       - spec.namespaceSelector.labelSelector
+ - spec.namespaceSelector.labelSelector
 
-         It's an **array of matchExpressions** . Manage whether nameSpace is available through the label of nameSpace.
-       - spec.namespaceSelector.labelSelector.matchExpressions
+   It's an **array of matchExpressions** . Manage whether nameSpace is available through the label of nameSpace.
+
+
+ - spec.namespaceSelector.labelSelector.matchExpressions
      
-         It's an **array of labelRule** . Every rule in the array needs to be verified.
+   It's an **array of labelRule** . Every rule in the array needs to be verified.
 
-         labelRule has the following fields:
+   labelRule has the following fields:
 
-             1.key: String. Required. Currently supports selection through the "Name" and "Phase" fields.
-             2.operator: String. Required. Currently supports selection through the "In" and "NotIn" fields.
-             2.values: []String. Required. 
+       1.key: String. Required. Currently supports selection through the "Name" and "Phase" fields.
+       2.operator: String. Required. Currently supports selection through the "In" and "NotIn" fields.
+       2.values: []String. Required. 
 
 
-## Example
-***
+# Example
+
 The next few examples of yaml may be helpful for you to design Accessor:
-### OnlyFieldSelector
+### Only FieldSelector
 
-#### Only one fieldExpression
+- Only one fieldExpression
 ```yaml
 apiVersion: storage.kubesphere.io/v1alpha1
 kind: Accessor
@@ -105,7 +131,7 @@ More than one fieldExpressions are allowed in a fieldSelector.
 
 And multiple rules are also allowed in fieldExpressions
 
-#### Multiple fieldExpressions
+- Multiple fieldExpressions
 ```yaml
 apiVersion: storage.kubesphere.io/v1alpha1
 kind: Accessor
@@ -126,7 +152,7 @@ spec:
 ```
 You can create the pvc of csi-qingcloud in namespace which (nameSpace.Name in ["NS1"]) **or** (nameSpace.Name in ["NS2", "NS3"])
 
-#### Multiple rule in one fieldExpressions
+- Multiple rule in one fieldExpressions
 ```yaml
 apiVersion: storage.kubesphere.io/v1alpha1
 kind: Accessor
@@ -148,9 +174,9 @@ You can create the pvc of csi-qingcloud only in namespace which (nameSpace.Name 
 
 It means that the rules in fieldExpressions must be followed at the same time.
 
-### OnlyLabelSelector
+### Only LabelSelector
 
-####  Only one matchExpressions
+- Only one matchExpressions
 ```yaml
 apiVersion: storage.kubesphere.io/v1alpha1
 kind: Accessor
@@ -168,7 +194,7 @@ spec:
 This requires nameSpace to have the key "app" label and the value in this array: ["val1", "val2"]
 
 
-#### Multiple matchExpressions
+- Multiple matchExpressions
 ```yaml
 apiVersion: storage.kubesphere.io/v1alpha1
 kind: Accessor
@@ -189,7 +215,7 @@ spec:
 ```
 You can create the pvc of csi-qingcloud in namespace which (have the key "app" label and the value in ["app1", "app2"]) **or** (have the key "owner" label and the value in ["owner1", "owner2"])
 
-#### Multiple rule in one FieldExpressions
+- Multiple rule in one FieldExpressions
 ```yaml
 apiVersion: storage.kubesphere.io/v1alpha1
 kind: Accessor
@@ -209,7 +235,7 @@ spec:
 ```
 You can create the pvc of csi-qingcloud in namespace which (have the key "app" label and in the value in ["app1"]) **and** (have the key "owner" label and the value in ["owner1", "owner2"])
 
-### Both fieldSelector and labelSelector
+### Both FieldSelector and LabelSelector
 ```yaml
 apiVersion: storage.kubesphere.io/v1alpha1
 kind: Accessor
@@ -245,5 +271,7 @@ It is allowed to create pvc in a namespace that meets one of the following condi
  - (name in ["NS1", "NS2"]) **and** (have the key "app" label and in the value in ["app2", "app3"])
  - (status.Phase in ["Active"]) **and** (have the key "app" label and in the value in ["app1"]) **and** (have the key "owner" label and the value in ["owner1", "owner2"])
  - (status.Phase in ["Active"]) **and** (have the key "app" label and in the value in ["app2", "app3"])
-## Notice
+
+# Notice
+
 :warning: **Warning**:Too many accessors may cause unexpected errors in the webhook. It is recommended that one storageClass corresponds to one accessor.
