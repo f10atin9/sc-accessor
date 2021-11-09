@@ -1,5 +1,6 @@
 # storageclass-accessor
 
+
 ## Contents
 - [Contents](#contents)
 - [Intro](#intro)
@@ -21,7 +22,7 @@ Users can create accessor and set namespaceSelector to achieve **namespace-level
 # Installation
 
 ## Quick start
-***
+
 The guide shows how to deploy StorageClass accessor webhook to the cluster. And provides an example accessor about csi-qingcloud.
 ### 1.install CRD and CR
 ```shell
@@ -236,6 +237,7 @@ spec:
 You can create the pvc of csi-qingcloud in namespace which (have the key "app" label and in the value in ["app1"]) **and** (have the key "owner" label and the value in ["owner1", "owner2"])
 
 ### Both FieldSelector and LabelSelector
+
 ```yaml
 apiVersion: storage.kubesphere.io/v1alpha1
 kind: Accessor
@@ -248,6 +250,7 @@ spec:
       - fieldExpressions:
           - field: "Name"
             operator: "In"
+
             values: ["NS1", "NS2"]
       - fieldExpressions:
           - field: "Phase"
@@ -257,6 +260,7 @@ spec:
       - matchExpressions:
           - key: "app"
             operator: "In"
+
             values: ["app1"]
           - key: "owner"
             operator: "In"
@@ -275,3 +279,4 @@ It is allowed to create pvc in a namespace that meets one of the following condi
 # Notice
 
 :warning: **Warning**:Too many accessors may cause unexpected errors in the webhook. It is recommended that one storageClass corresponds to one accessor.
+
