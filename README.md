@@ -3,57 +3,57 @@
 
 ## Contents
 - [Contents](#contents)
-- [Intro](#intro)
+- [Introduction](#introduction)
 - [Installation](#installation)
-  - [Quick start](#quick-start)
+  - [Quick Start](#quick-start)
   - [Accessor CR](#accessor-cr)
-- [Example](#example)
+- [Examples](#examples)
   - [Only FieldSelector](#only-fieldselector)
   - [Only LabelSelector](#only-labelselector)
   - [Both FieldSelector and LabelSelector](#both-fieldselector-and-labelselector)
 - [Notice](#notice)
 
-# Intro
+# Introduction
 
 The storageclass-accessor webhook is an HTTP callback which responds to admission requests.
-When creating and deleting the PVC, it will take out the accessor related to this storageclass, and the request will be allowed only when all accessors pass the verification.
-Users can create accessor and set namespaceSelector to achieve **namespace-level** management on the StorageClass to create pvc
+When creating and deleting the PVC, it will take out the accessor related to this storage class, and the request will be allowed only when all accessors pass the verification.
+Users can create accessors and set `namespaceSelector` to achieve **namespace-level** management on the storage class which provisions PVC.
 
 # Installation
 
 ## Quick start
 
-The guide shows how to deploy StorageClass accessor webhook to the cluster. And provides an example accessor about csi-qingcloud.
-### 1.install CRD and CR
+The guide describes how to deploy a storageclass-accessor webhook to a cluster and provides an example accessor based on csi-qingcloud.
+### 1. Install CRD and CR
 ```shell
 kubectl create -f  client/config/crds
 ```
 
-### 2.create cert and secret
+### 2. Create certificate and secret
 ```bash
 # This script will create a TLS certificate signed by the [cluster]It will place the public and private key into a secret on the cluster.
 ./deploy/create-cert.sh --service storageclass-accessor-service --secret accessor-validation-secret --namespace default # Make sure to use a different namespace
 ```
-Move cert.pem and key.pem to the path "/etc/storageclass-accessor-webhook/certs"
+Move `cert.pem` and `key.pem` to the path `/etc/storageclass-accessor-webhook/certs`.
 
 
-### 3.Patch the `ValidatingWebhookConfiguration` file from the template, filling in the CA bundle field.
+### 3. Patch the `ValidatingWebhookConfiguration` file from the template and fill in the CA bundle field
 ```shell
 cat ./deploy/pvc-accessor-configuration-template | ./deploy/patch-ca-bundle.sh > ./deploy/pvc-accessor-configuration.yaml
 ```
 
-### 4.Deploy 
+### 4. Deploy 
 ```shell
 kubectl apply -f deploy
 ```
 
-### 5.Write a CR
-Create your accessor according to your needs according to [Accessor CR](#accessor-cr) and [Example](#Example).
+### 5. Write a CR
+Create your accessor according to your needs by referring to [Accessor CR](#accessor-cr) and [Examples](#Examples).
 
-### 6.Apply CR
-Use the `kubectl apply` command to make the accessor you created work.
+### 6. Apply CR
+Use the `kubectl apply` command to make the accessor you created operational.
 
-### 7.Test
+### 7. Test
 Now you can try to create a PVC. If it is created in a namespace that is not allowed, the following error will be output:
 
 > Error from server: error when creating "PVC.yaml": admission webhook "pvc-accessor.storage.kubesphere.io" denied the request: The storageClass: **StorageClassName** does not allowed CREATE persistentVolumeClaim **PVC-NAME** in the namespace: **TARGET-NS**
@@ -63,54 +63,53 @@ Now you can try to create a PVC. If it is created in a namespace that is not all
 A complete accessor should have the following fields:
 
 
- - spec.storageClassName
+ - `spec.storageClassName`
 
    The accessor knows the effective sc according to this field.
 
 
- - spec.namespaceSelector
+ - `spec.namespaceSelector`
 
    This field is used to fill in the limit of nameSpace, Including **labelSelector** and **fieldSelector**.
 
 
- - spec.namespaceSelector.fieldSelector
+ - `spec.namespaceSelector.fieldSelector`
 
-    Is an **array of fieldExpressions** .Manage whether nameSpace is available through the label of nameSpace.
+    It is an **array of fieldExpressions** that manages whether nameSpace is available through the label of nameSpace.
 
 
- - fieldExpressions
+ - `fieldExpressions`
 
-   It's an **array of fieldRule** . Every rule in the array needs to be verified.
+   It is an **array of fieldRule**. Every rule in the array needs to be verified.
 
-   labelRule has the following fields:
+   `labelRule` has the following fields:
 
        1.field: String. Required. Currently supports selection through the "Name" and "Phase" fields.
        2.operator: String. Required. Currently supports selection through the "In" and "NotIn" fields.
        2.values: []String. Required. 
 
-     
- - spec.namespaceSelector.labelSelector
+ - `spec.namespaceSelector.labelSelector`
 
-   It's an **array of matchExpressions** . Manage whether nameSpace is available through the label of nameSpace.
+   It is an **array of matchExpressions** that manages whether nameSpace is available through the label of nameSpace.
 
 
- - spec.namespaceSelector.labelSelector.matchExpressions
-     
-   It's an **array of labelRule** . Every rule in the array needs to be verified.
+ - `spec.namespaceSelector.labelSelector.matchExpressions`
+   
+   It is an **array of labelRule**. Every rule in the array needs to be verified.
 
-   labelRule has the following fields:
+   `labelRule` has the following fields:
 
        1.key: String. Required. Currently supports selection through the "Name" and "Phase" fields.
        2.operator: String. Required. Currently supports selection through the "In" and "NotIn" fields.
        2.values: []String. Required. 
 
 
-# Example
+# Examples
 
-The next few examples of yaml may be helpful for you to design Accessor:
+The following few examples of yaml may be helpful for you to design your own accessor.
 ### Only FieldSelector
 
-- Only one fieldExpression
+- Only one `fieldExpression`
 ```yaml
 apiVersion: storage.kubesphere.io/v1alpha1
 kind: Accessor
@@ -125,14 +124,14 @@ spec:
             operator: "In"
             values: ["NS1"]
 ```
-After applying this accessor, you can create the pvc of csi-qingcloud only in namespace.name which in this array :["NS1"]
+After applying this accessor, you can create the PVC of csi-qingcloud only in namespace.name which in this array :["NS1"].
 
 
-More than one fieldExpressions are allowed in a fieldSelector.
+More than one fieldExpressions are allowed in a `fieldSelector`.
 
-And multiple rules are also allowed in fieldExpressions
+And multiple rules are also allowed in `fieldExpressions`.
 
-- Multiple fieldExpressions
+- Multiple `fieldExpressions`
 ```yaml
 apiVersion: storage.kubesphere.io/v1alpha1
 kind: Accessor
@@ -151,9 +150,9 @@ spec:
             operator: "In"
             values: ["NS2", "NS3"]
 ```
-You can create the pvc of csi-qingcloud in namespace which (nameSpace.Name in ["NS1"]) **or** (nameSpace.Name in ["NS2", "NS3"])
+You can create the PVC of csi-qingcloud in the following namespace: (nameSpace.Name in ["NS1"]) **or** (nameSpace.Name in ["NS2", "NS3"]).
 
-- Multiple rule in one fieldExpressions
+- Multiple rules in one `fieldExpressions`
 ```yaml
 apiVersion: storage.kubesphere.io/v1alpha1
 kind: Accessor
@@ -171,13 +170,13 @@ spec:
             operator: "In"
             values: ["Active"]
 ```
-You can create the pvc of csi-qingcloud only in namespace which (nameSpace.Name NotIn ["NS1", "NS2"]) **and** (nameSpace.Status.Phase in ["Active"])
+You can create the PVC of csi-qingcloud only in the following namespace: (nameSpace.Name NotIn ["NS1", "NS2"]) **and** (nameSpace.Status.Phase in ["Active"])
 
-It means that the rules in fieldExpressions must be followed at the same time.
+It means that the rules in `fieldExpressions` must be followed at the same time.
 
 ### Only LabelSelector
 
-- Only one matchExpressions
+- Only one `matchExpressions`
 ```yaml
 apiVersion: storage.kubesphere.io/v1alpha1
 kind: Accessor
@@ -192,10 +191,10 @@ spec:
             operator: "In"
             values: ["app1", "app2"]
 ```
-This requires nameSpace to have the key "app" label and the value in this array: ["val1", "val2"]
+This requires nameSpace to have the key "app" label and the value in this array: ["val1", "val2"].
 
 
-- Multiple matchExpressions
+- Multiple `matchExpressions`
 ```yaml
 apiVersion: storage.kubesphere.io/v1alpha1
 kind: Accessor
@@ -214,9 +213,9 @@ spec:
             operator: "In"
             values: ["owner1", "owner2"]
 ```
-You can create the pvc of csi-qingcloud in namespace which (have the key "app" label and the value in ["app1", "app2"]) **or** (have the key "owner" label and the value in ["owner1", "owner2"])
+You can create the PVC of csi-qingcloud in the following namespace: (have the key "app" label and the value in ["app1", "app2"]) **or** (have the key "owner" label and the value in ["owner1", "owner2"]).
 
-- Multiple rule in one FieldExpressions
+- Multiple rule in one `FieldExpressions`
 ```yaml
 apiVersion: storage.kubesphere.io/v1alpha1
 kind: Accessor
@@ -234,9 +233,9 @@ spec:
             operator: "In"
             values: ["owner1", "owner2"]
 ```
-You can create the pvc of csi-qingcloud in namespace which (have the key "app" label and in the value in ["app1"]) **and** (have the key "owner" label and the value in ["owner1", "owner2"])
+You can create the PVC of csi-qingcloud in the following namespace: (have the key "app" label and in the value in ["app1"]) **and** (have the key "owner" label and the value in ["owner1", "owner2"]).
 
-### Both FieldSelector and LabelSelector
+### Both fieldSelector and labelSelector
 
 ```yaml
 apiVersion: storage.kubesphere.io/v1alpha1
@@ -270,7 +269,7 @@ spec:
             operator: "In"
             values: ["app2", "app3"]
 ```
-It is allowed to create pvc in a namespace that meets one of the following conditions:
+It is allowed to create PVC in a namespace that meets one of the following conditions:
  - (name in ["NS1", "NS2"]) **and** (have the key "app" label and in the value in ["app1"]) **and** (have the key "owner" label and the value in ["owner1", "owner2"])
  - (name in ["NS1", "NS2"]) **and** (have the key "app" label and in the value in ["app2", "app3"])
  - (status.Phase in ["Active"]) **and** (have the key "app" label and in the value in ["app1"]) **and** (have the key "owner" label and the value in ["owner1", "owner2"])
@@ -278,5 +277,5 @@ It is allowed to create pvc in a namespace that meets one of the following condi
 
 # Notice
 
-:warning: **Warning**:Too many accessors may cause unexpected errors in the webhook. It is recommended that one storageClass corresponds to one accessor.
+:warning: **Warning**: Too many accessors may cause unexpected errors in your webhook. It is recommended that one storage class should correspond to one accessor.
 
