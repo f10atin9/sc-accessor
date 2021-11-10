@@ -8,9 +8,9 @@
   - [Quick Start](#quick-start)
   - [Accessor CR](#accessor-cr)
 - [Examples](#examples)
-  - [Only FieldSelector](#only-fieldselector)
-  - [Only LabelSelector](#only-labelselector)
-  - [Both FieldSelector and LabelSelector](#both-fieldselector-and-labelselector)
+  - [Only fieldSelector](#only-fieldselector)
+  - [Only labelSelector](#only-labelselector)
+  - [Both fieldSelector and labelSelector](#both-fieldselector-and-labelselector)
 - [Notice](#notice)
 
 # Introduction
@@ -107,7 +107,7 @@ A complete accessor should have the following fields:
 # Examples
 
 The following few examples of yaml may be helpful for you to design your own accessor.
-### Only FieldSelector
+### Only fieldSelector
 
 - Only one `fieldExpression`
 ```yaml
@@ -174,7 +174,7 @@ You can create the PVC of csi-qingcloud only in the following namespace: (nameSp
 
 It means that the rules in `fieldExpressions` must be followed at the same time.
 
-### Only LabelSelector
+### Only labelSelector
 
 - Only one `matchExpressions`
 ```yaml
