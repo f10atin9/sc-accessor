@@ -191,7 +191,7 @@ spec:
             operator: "In"
             values: ["app1", "app2"]
 ```
-This requires nameSpace to have the key "app" label and the value in this array: ["val1", "val2"].
+This requires nameSpace to have the key "app" label and the value in this array: ["app1", "app2"].
 
 
 - Multiple `matchExpressions`
